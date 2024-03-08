@@ -21,22 +21,27 @@ local function get_word()
 	return syllables_3[math.random(#syllables_3)] .. syllables_2[math.random(#syllables_2)]
 end
 
-M.go_debug_print_word = function()
+M.go_debug_print_var = function()
 	local word = get_word()
-	local line = string.format('fmt.Printf("%s) \\%v", ', word)
+	local line = string.format('fmt.Printf("%s: %%v\\n", ', word)
 	vim.api.nvim_put({ line }, '', true, true)
 end
 
-M.debug_word = function()
+M.go_debug_print_line = function()
 	local word = get_word()
 	local line = string.format('fmt.Printf("%s")', word)
 	vim.api.nvim_put({ line }, '', true, true)
 end
 
-vim.keymap.set('i', '<leader>8', '<cmd>lua require("randomword").go_debug_print_word()<CR>', {noremap = true, silent = true})
-vim.keymap.set('n', '<leader>8', '<cmd>lua require("randomword").debug_word()<CR>', {noremap = true, silent = true})
+M.debug_word = function()
+	local word = get_word()
+	vim.api.nvim_put({ word }, '', true, true)
+end
+
+local opts = { noremap = true, silent = true }
+vim.keymap.set('n', '<leader>wd', M.go_debug_print_var, opts)
+vim.keymap.set('n', '<leader>wd', M.go_debug_print_line, opts)
 
 -- Map the commands to Neovim
 vim.api.nvim_create_user_command('RandomWord', M.debug_word, {})
 return M
-
