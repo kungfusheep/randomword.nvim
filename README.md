@@ -7,7 +7,7 @@ This Neovim plugin generates random words and inserts debug print statements wit
 
 ## Features
 
-- Generates random Japanese-sounding words by combining syllables.
+- Generates random 5 letter words by combining syllables.
 - Supports language-specific templates for debug print statements.
 - Allows simple customization of templates and keybinds.
 - Provides a user command and keybinds for easy insertion of debug print statements.
