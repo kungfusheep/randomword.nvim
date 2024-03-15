@@ -1,3 +1,16 @@
+local config = {
+	templates = {
+		lua = {
+			default = "print('<word>')",
+			line = 'print(string.format("<word> %s", <cursor>))',
+		},
+	},
+	keybinds = {
+		default = '<leader>rw',
+		line = '<leader>rl',
+	}
+}
+
 local M = {}
 
 -- Define the syllables
@@ -8,7 +21,6 @@ local syllables_2 = { 'ka', 'ki', 'ku', 'ke', 'ko', 'ga', 'gi', 'gu', 'ge', 'go'
 	'be', 'bo', 'pa', 'pi', 'pu', 'pe', 'po', 'ma', 'mi', 'mu',
 	'me', 'mo', 'ya', 'yu', 'yo', 'ra', 'ri', 'ru', 're', 'ro',
 	'wa', 'wo' }
-
 local syllables_3 = { 'shi', 'tsu', 'chi', 'nai', 'nei', 'nou', 'sai', 'sei', 'sou',
 	'tai', 'tei', 'tou', 'hai', 'hei', 'hou', 'mai', 'mei', 'mou',
 	'yai', 'you', 'rai', 'rei', 'rou', 'wai', 'wou',
@@ -21,27 +33,69 @@ local function get_word()
 	return syllables_3[math.random(#syllables_3)] .. syllables_2[math.random(#syllables_2)]
 end
 
-M.go_debug_print_var = function()
-	local word = get_word()
-	local line = string.format('fmt.Printf("%s: %%v\\n", ', word)
-	vim.api.nvim_put({ line }, '', true, true)
+-- getTemplate returns the template for the given language and name
+local function getTemplate(lang, name)
+	local tpl = config.templates
+	if tpl[lang] and tpl[lang][name] then
+		return tpl[lang][name]
+	elseif tpl[lang] and tpl[lang].default then
+		return tpl[lang].default
+	else
+		return '<word>'
+	end
 end
 
-M.go_debug_print_line = function()
+-- insertDebugPrint inserts a debug print statement at the current cursor position
+local function insertDebugPrint(templateName)
 	local word = get_word()
-	local line = string.format('fmt.Printf("%s")', word)
-	vim.api.nvim_put({ line }, '', true, true)
+	local bufferFiletype = vim.bo.filetype
+	local template = getTemplate(bufferFiletype, templateName)
+	local stmtWithWord = template:gsub("<word>", word)
+
+	-- Find the cursor placeholder position
+	local cursorPos = string.find(stmtWithWord, "<cursor>")
+
+	-- Remove the cursor placeholder from the statement
+	local stmt = stmtWithWord:gsub("<cursor>", "")
+	local lines = vim.split(stmt, "\n")
+
+	-- Insert the debug print statement
+	vim.api.nvim_put(lines, 'c', false, true)
+
+	if cursorPos then
+		-- Calculate the cursor's new line and column
+		local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
+		local col = cursorPos - 1 -- Adjust because Lua indexing starts at 1
+
+		-- Move the cursor to the new position
+		vim.api.nvim_win_set_cursor(0, { row, col })
+		-- go to insert mode
+		vim.cmd('startinsert')
+	end
 end
 
-M.debug_word = function()
-	local word = get_word()
-	vim.api.nvim_put({ word }, '', true, true)
+
+
+-- setup sets up the plugin with the user's configuration.
+function M.setup(user_config)
+	-- Merge the user config with the default config
+	config = vim.tbl_deep_extend("force", config, user_config or {})
+
+	-- Map the commands to Neovim
+	vim.api.nvim_create_user_command('RandomWord', function(opts)
+		insertDebugPrint(opts.args)
+	end, { nargs = '?' })
+
+	-- Map the keybinds
+	vim.keymap.set('n', config.keybinds.default, ':RandomWord<CR>', { noremap = true, silent = true })
+	for name, keybind in pairs(config.keybinds) do
+		if name ~= "default" then
+			vim.keymap.set('n', keybind, ':RandomWord ' .. name .. '<CR>', { noremap = true, silent = true })
+		end
+	end
 end
 
-local opts = { noremap = true, silent = true }
-vim.keymap.set('n', '<leader>wd', M.go_debug_print_var, opts)
-vim.keymap.set('n', '<leader>wd', M.go_debug_print_line, opts)
+--dev
+M.setup()
 
--- Map the commands to Neovim
-vim.api.nvim_create_user_command('RandomWord', M.debug_word, {})
 return M
