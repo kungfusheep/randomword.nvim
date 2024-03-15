@@ -1,4 +1,4 @@
-# Random Word Debug Print
+# Random Debug Word
 
 This Neovim plugin generates random words and inserts debug print statements with those words into your code. It provides a convenient way to add quick debug statements that are easy to find while printf debugging. It can be easily configured to use your own templates, which are selected on a per-language basis.
 
