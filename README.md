@@ -2,6 +2,9 @@
 
 This Neovim plugin generates random words and inserts debug print statements with those words into your code. It provides a convenient way to add quick debug statements that are easy to find while printf debugging. It can be easily configured to use your own templates, which are selected on a per-language basis.
 
+<img width="342" alt="image" src="https://github.com/kungfusheep/randomword.nvim/assets/6867511/f22518f0-110e-4630-b9ae-2b8ac9ea0412">
+
+
 ## Features
 
 - Generates random Japanese-sounding words by combining syllables.
