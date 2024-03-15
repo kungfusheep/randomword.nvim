@@ -74,8 +74,6 @@ local function insertDebugPrint(templateName)
 	end
 end
 
-
-
 -- setup sets up the plugin with the user's configuration.
 function M.setup(user_config)
 	-- Merge the user config with the default config
@@ -94,8 +92,5 @@ function M.setup(user_config)
 		end
 	end
 end
-
---dev
-M.setup()
 
 return M
