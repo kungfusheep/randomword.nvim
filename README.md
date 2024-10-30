@@ -44,19 +44,46 @@ require('randomword').setup({
         go = {
             default = 'fmt.Printf("<word>: %v \\n", ${1})',
             line = 'fmt.Println("<word>")',
+
+            my_keybind = 'fmt.Println("<randomword> ${1} <emoji>")',
         },
         -- Add more language-specific templates here
     },
     keybinds = {
         default = '<leader>rw',
         line = '<leader>rl',
+        my_keybind = '<leader>mk',
         -- Add more keybinds here
+    },
+    user_tokens = {
+        randomword = function()
+            return vim.fn.system("gshuf -n 1 /usr/share/dict/words"):gsub("\n", "")
+        end,
+        emoji = function() -- Generate a random emoji from a given Unicode range
+            math.randomseed(os.time())
+            local function get_random_emoji()
+                local ranges = {
+                    { 0x1F600, 0x1F64F }, -- Faces and people
+                    { 0x1F300, 0x1F5FF }, -- Symbols and pictographs
+                    { 0x1F680, 0x1F6FF }, -- Transport and map symbols
+                    { 0x1F950, 0x1F9FF } -- Food, animals, etc.
+                }
+                -- Select a random range
+                local range = ranges[math.random(#ranges)]
+                local codepoint = math.random(range[1], range[2])
+                -- Convert codepoint to UTF-8 character
+                return vim.fn.nr2char(codepoint)
+            end
+            return get_random_emoji()
+        end,
+        -- Add more user tokens here
     }
 })
 ```
 
 - `templates`: Defines the language-specific templates for debug print statements. Each language can have a `default` template and additional named templates. The `<word>` placeholder will be replaced with the generated random word, and `${1}` will be the cursor position after the template is inserted. The templates are inserted as native neovim snippets and so can contain additional snippet placeholders based on your needs.
 - `keybinds`: Defines the keybinds for inserting debug print statements. The `default` keybind is used for the default template, and additional named keybinds can be defined for specific templates. 
+- `user_tokens`: Defines custom tokens that can be used in templates. The token name is enclosed in angle brackets, and the function is called to generate the token value. The function should return a string that will be inserted into the template. The example above shows how to generate a random word and a random emoji.
 
 ## Usage
 
