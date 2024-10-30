@@ -59,23 +59,19 @@ require('randomword').setup({
         randomword = function()
             return vim.fn.system("gshuf -n 1 /usr/share/dict/words"):gsub("\n", "")
         end,
-        emoji = function() -- Generate a random emoji from a given Unicode range
+        emoji = function()
             math.randomseed(os.time())
-            local function get_random_emoji()
-                local ranges = {
-                    { 0x1F600, 0x1F64F }, -- Faces and people
-                    { 0x1F300, 0x1F5FF }, -- Symbols and pictographs
-                    { 0x1F680, 0x1F6FF }, -- Transport and map symbols
-                    { 0x1F950, 0x1F9FF } -- Food, animals, etc.
-                }
-                -- Select a random range
-                local range = ranges[math.random(#ranges)]
-                local codepoint = math.random(range[1], range[2])
-                -- Convert codepoint to UTF-8 character
-                return vim.fn.nr2char(codepoint)
-            end
-            return get_random_emoji()
+            local ranges = {
+                { 0x1F600, 0x1F64F }, -- Faces and people
+                { 0x1F300, 0x1F5FF }, -- Symbols and pictographs
+                { 0x1F680, 0x1F6FF }, -- Transport and map symbols
+                { 0x1F950, 0x1F9FF }  -- Food, animals, etc.
+            }
+            local range = ranges[math.random(#ranges)]
+            local codepoint = math.random(range[1], range[2])
+            return vim.fn.nr2char(codepoint)
         end,
+
         -- Add more user tokens here
     }
 })
