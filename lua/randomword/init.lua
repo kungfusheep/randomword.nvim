@@ -41,12 +41,23 @@ local function getTemplate(lang, name)
 	elseif tpl[lang] and tpl[lang].default then
 		return tpl[lang].default
 	else
-		return '<word>'
+		return "<word>"
 	end
 end
 
+-- replaceUserDefinedTokens replaces the user-defined tokens in the statement by calling the corresponding functions
+local function replace_user_tokens(stmt)
+	for userDefinedToken in stmt:gmatch("<(.-)>") do
+		local tokenFunction = config.user_tokens[userDefinedToken]
+		if tokenFunction then
+			stmt = stmt:gsub("<" .. userDefinedToken .. ">", tokenFunction())
+		end
+	end
+	return stmt
+end
+
 -- insertDebugPrint inserts a debug print statement at the current cursor position
-local function insertDebugPrint(templateName)
+local function insert_debug_print(templateName)
 	local word = get_word()
 	local bufferFiletype = vim.bo.filetype
 	local template = getTemplate(bufferFiletype, templateName)
@@ -55,6 +66,8 @@ local function insertDebugPrint(templateName)
 	local stmtWithWord = template:gsub("<word>", word)
 	-- remove the cursor placeholder from the statement for backward compatibility
 	local stmt = stmtWithWord:gsub("<cursor>", "${1}")
+	-- replace the user-defined tokens in the statement
+	stmt = replace_user_tokens(stmt)
 
 	-- insert the debug print statement on a new line
 	vim.cmd('normal! o ')
@@ -68,7 +81,7 @@ function M.setup(user_config)
 
 	-- Map the commands to Neovim
 	vim.api.nvim_create_user_command('RandomWord', function(opts)
-		insertDebugPrint(opts.args)
+		insert_debug_print(opts.args)
 	end, { nargs = '?' })
 
 	-- Map the keybinds
