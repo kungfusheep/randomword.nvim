@@ -1,8 +1,8 @@
 local config = {
 	templates = {
 		lua = {
-			default = "print('<word>')",
-			line = 'print(string.format("<word> %s", <cursor>))',
+			default = 'print(string.format("<word> %s", ${1}))',
+			line = "print('<word>')",
 		},
 	},
 	keybinds = {
@@ -50,28 +50,15 @@ local function insertDebugPrint(templateName)
 	local word = get_word()
 	local bufferFiletype = vim.bo.filetype
 	local template = getTemplate(bufferFiletype, templateName)
+
+	-- replace the word placeholder with the random word
 	local stmtWithWord = template:gsub("<word>", word)
+	-- remove the cursor placeholder from the statement for backward compatibility
+	local stmt = stmtWithWord:gsub("<cursor>", "${1}")
 
-	-- Find the cursor placeholder position
-	local cursorPos = string.find(stmtWithWord, "<cursor>")
-
-	-- Remove the cursor placeholder from the statement
-	local stmt = stmtWithWord:gsub("<cursor>", "")
-	local lines = vim.split(stmt, "\n")
-
-	-- Insert the debug print statement
-	vim.api.nvim_put(lines, 'c', false, true)
-
-	if cursorPos then
-		-- Calculate the cursor's new line and column
-		local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
-		local col = cursorPos - 1 -- Adjust because Lua indexing starts at 1
-
-		-- Move the cursor to the new position
-		vim.api.nvim_win_set_cursor(0, { row, col })
-		-- go to insert mode
-		vim.cmd('startinsert')
-	end
+	-- insert the debug print statement on a new line
+	vim.cmd('normal! o ')
+	vim.snippet.expand(stmt)
 end
 
 -- setup sets up the plugin with the user's configuration.
